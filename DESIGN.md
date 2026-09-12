@@ -155,7 +155,7 @@ no horizontal scroll. Tile font size by digit count: 1–2 digits `min(8vw, 34px
 
 Engine unit tests in `src/game/engine.test.ts` (UI is smoke-checked in Task 3):
 - `slideRow`: `[8,0,0,8] -> [16,0,0,0]` (g 16); `[2,2,4,8] -> [4,4,8,0]` (g 4);
-  `[2,2,2,2] -> [4,4,0,0]` (g 8); `[4,4,8,8] -> [8,8,0,0]`; no-op row (g 0);
+  `[2,2,2,2] -> [4,4,0,0]` (g 8); `[4,4,8,8] -> [8,16,0,0]` (g 24); no-op row (g 0);
   all-zeros row.
 - `move`: one hand-computed case per direction; no-op -> `moved: false`, SAME
   state reference, unchanged rng stream; success spawns exactly one tile and
