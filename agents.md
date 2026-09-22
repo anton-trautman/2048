@@ -1,10 +1,11 @@
-# 2048 — context
+# 2048 — Agent Handoff (read before touching anything)
 
-Project instructions and task handoff live in **agents.md** (same directory,
-lowercase — pi does NOT auto-load lowercase; this file exists only so pi loads
-the project context at startup). Read [agents.md](agents.md) in full before
-touching code.
-e "as good as possible": thorough review + fixes, commit & push,
+Full spec: [DESIGN.md](DESIGN.md) · Plan: [docs/plans/2048-game.md](docs/plans/2048-game.md)
+· QA log: [docs/QA-STATUS.md](docs/QA-STATUS.md) (fill it as you go).
+
+## Goal (user's request)
+
+Make the game "as good as possible": thorough review + fixes, commit & push,
 very detailed browser QA (layout, mechanics, responsiveness, animations).
 The user accepts the result **on a phone** at
 **https://anton-trautman.github.io/2048/** — verify the deployed site, then
@@ -26,7 +27,7 @@ report the URL + QA summary to the user.
 3. TypeScript strict, vanilla DOM, no framework, no CDN. Vite `base: '/2048/'`
    must stay (GitHub Pages sub-path).
 
-## Status (as of 2026-08-27)
+## Status (as of 2026-09-22)
 
 - [x] Full source read + code review (code-reviewer + typescript-reviewer rubrics).
 - [x] Repo registered in Orca — Orca worktrees for this repo are now possible.
