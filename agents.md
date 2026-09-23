@@ -27,16 +27,23 @@ report the URL + QA summary to the user.
 3. TypeScript strict, vanilla DOM, no framework, no CDN. Vite `base: '/2048/'`
    must stay (GitHub Pages sub-path).
 
-## Status (as of 2026-09-22)
+## Status (as of 2026-09-23 — ALL WORK DONE, pending user phone acceptance)
 
 - [x] Full source read + code review (code-reviewer + typescript-reviewer rubrics).
 - [x] Repo registered in Orca — Orca worktrees for this repo are now possible.
-- [ ] Apply fixes (ordered list below).
-- [ ] `npm test` + `npm run build` green.
-- [ ] Commit + push to `main`.
-- [ ] Workflow "Deploy to GitHub Pages" green.
-- [ ] Browser QA against the deployed site; fill docs/QA-STATUS.md.
-- [ ] Report to user: URL, QA summary, what to check on the phone.
+- [x] Apply fixes (ordered list below) — all 7 fixes implemented + unit-tested.
+- [x] `npm test` + `npm run build` green — **52/52** tests; build green.
+- [x] Commit + push to `main` — via `land-branch.sh` (final land commit
+  `c977348`, branch deleted). Direct commits/pushes to `main` are **blocked**
+  by the pre-tool-use guard; always land via `land-branch.sh`.
+- [x] Workflow "Deploy to GitHub Pages" green — run #35814000678
+  (headSha `c977348`, success, 2026-09-23T03:21:30Z).
+- [x] Browser QA against the deployed site; fill docs/QA-STATUS.md — **PASS**
+  (layout, mechanics, animations, 320/360/393px responsive, a11y, console).
+- [ ] Report to user: URL + QA summary — **the only remaining step**.
+
+**Current git state:** `main` at `c977348` = `origin/main`; `2048-game` branch
+deleted. Screenshot: `docs/qascreenshots/desktop.png`.
 
 ## Review findings
 
@@ -116,10 +123,18 @@ Final acceptance = user opens the URL on a phone and swipes.
 - Verify green: `gh run list --limit 5 --json name,conclusion,startedAt,completedAt`.
 - Then `curl -sI https://anton-trautman.github.io/2048/` → 200.
 
-## First 3 actions for the new session
-1. `npm test && npm run build` — baseline green (should pass).
-2. Fixes #1–#3, each its own commit, test after each.
-3. Animations #4 — largest chunk: keep atomic (computeCellAnims test + impl,
-   then render integration, then CSS).
+## Current state + actions for a next session
 
-Done = deployed green site + filled QA-STATUS.md + report to user.
+Work is **complete** as of 2026-09-23. If you land in a fresh session:
+
+1. **User phone acceptance** — the user opens
+   https://anton-trautman.github.io/2048/ and swipes. If they report anything
+   off, fix it and land via `land-branch.sh`.
+2. **Optional polish (only on request):** DEV-only `window.__GAME__` handle
+   to force the win / game-over overlays in a real browser (the deployed build
+   keeps state private; overlays are fully covered by render tests).
+3. **If code changes are needed:** verify green baseline
+   (`npm test && npm run build`), work on a feature branch, land with
+   `land-branch.sh`.
+
+Done = user confirms the phone check.
