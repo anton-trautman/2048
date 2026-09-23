@@ -22,10 +22,11 @@ export function startGame(root: HTMLElement): void {
     const result = move(state, dir, rng);
     if (result.moved) {
       state = result.state;
-      draw();
+      draw(dir);
     }
   };
-  const draw = () => render(root, state, onNewGame, onKeepPlaying);
+  const draw = (lastDir?: Direction) =>
+    render(root, state, onNewGame, onKeepPlaying, lastDir);
 
   bindInput(root, onDirection);
   draw();
