@@ -92,3 +92,75 @@ describe('bindInput touch handling', () => {
     expect(onDirection).not.toHaveBeenCalled();
   });
 });
+
+// jsdom's `performance` is not faked by vi.useFakeTimers(), so the keyboard
+// tests drive a deterministic clock by spying on `performance.now()` instead.
+function fakeNow() {
+  return vi.spyOn(globalThis.performance, 'now').mockImplementation(() => now);
+}
+
+let now = 0;
+
+describe('bindInput keyboard throttling', () => {
+  it('throttles key auto-repeat to one move per 150 ms (held arrows)', () => {
+    const { root } = makeRoot();
+    const onDirection = vi.fn();
+    bindInput(root, onDirection);
+    const restore = fakeNow();
+    const arrowUp = () =>
+      root.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }));
+
+    now = 0;
+    arrowUp();
+    expect(onDirection).toHaveBeenCalledTimes(1); // accepted
+    now = 149;
+    arrowUp();
+    now = 149;
+    arrowUp();
+    expect(onDirection).toHaveBeenCalledTimes(1); // repeats within 150 ms swallowed
+
+    now = 100; // still inside the 150 ms window
+    arrowUp();
+    expect(onDirection).toHaveBeenCalledTimes(1);
+
+    now = 150; // exactly 150 ms since last accepted — accepted
+    arrowUp();
+    expect(onDirection).toHaveBeenCalledTimes(2);
+    expect(onDirection).toHaveBeenLastCalledWith('up');
+
+    now = 200; // 50 ms after the last accepted — throttled again
+    arrowUp();
+    expect(onDirection).toHaveBeenCalledTimes(2);
+    restore.mockRestore();
+  });
+
+  it('throttles WASD auto-repeat the same way; non-move keys do not reset it', () => {
+    const { root } = makeRoot();
+    const onDirection = vi.fn();
+    bindInput(root, onDirection);
+    const restore = fakeNow();
+    const key = (k: string) =>
+      root.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true }));
+
+    now = 0;
+    key('w'); // accepted (up)
+    now = 100;
+    key('w'); // within 150 ms → swallowed
+    now = 140;
+    key('W'); // within 150 ms → swallowed
+    expect(onDirection).toHaveBeenCalledTimes(1);
+    expect(onDirection).toHaveBeenLastCalledWith('up');
+
+    now = 140;
+    key('f'); // non-direction key: ignored, does not reset the throttle
+    now = 149; // 149 ms since accepted 'w' — still throttled
+    key('w');
+    expect(onDirection).toHaveBeenCalledTimes(1);
+
+    now = 150;
+    key('w');
+    expect(onDirection).toHaveBeenCalledTimes(2);
+    expect(onDirection).toHaveBeenLastCalledWith('up');
+    restore.mockRestore();
+  });
+});

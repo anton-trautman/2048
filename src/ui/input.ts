@@ -8,12 +8,18 @@ const KEY_MAP: Record<string, Direction> = {
 };
 
 const SWIPE_THRESHOLD = 30;
+const KEY_REPEAT_MS = 150;
 
 export function bindInput(el: HTMLElement, onDirection: (d: Direction) => void): () => void {
+  let lastMoveAt: number | null = null;
   const onKeyDown = (e: KeyboardEvent) => {
     const dir = KEY_MAP[e.key];
     if (!dir) return;
     if (e.key.startsWith('Arrow')) e.preventDefault(); // arrows scroll the page
+    // Throttle OS key auto-repeat: at most one move per 150 ms.
+    const now = performance.now();
+    if (lastMoveAt !== null && now - lastMoveAt < KEY_REPEAT_MS) return;
+    lastMoveAt = now;
     onDirection(dir);
   };
   document.addEventListener('keydown', onKeyDown);
