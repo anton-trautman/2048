@@ -8,12 +8,18 @@ const KEY_MAP: Record<string, Direction> = {
 };
 
 const SWIPE_THRESHOLD = 30;
+const KEY_REPEAT_MS = 150;
 
 export function bindInput(el: HTMLElement, onDirection: (d: Direction) => void): () => void {
+  let lastMoveAt: number | null = null;
   const onKeyDown = (e: KeyboardEvent) => {
     const dir = KEY_MAP[e.key];
     if (!dir) return;
     if (e.key.startsWith('Arrow')) e.preventDefault(); // arrows scroll the page
+    // Throttle OS key auto-repeat: at most one move per 150 ms.
+    const now = performance.now();
+    if (lastMoveAt !== null && now - lastMoveAt < KEY_REPEAT_MS) return;
+    lastMoveAt = now;
     onDirection(dir);
   };
   document.addEventListener('keydown', onKeyDown);
@@ -22,6 +28,10 @@ export function bindInput(el: HTMLElement, onDirection: (d: Direction) => void):
   let sx = 0;
   let sy = 0;
   const onTouchStart = (e: TouchEvent) => {
+    // Only swipes that start on the board are captured. Touches on the header
+    // or overlay buttons must not be preventDefault'd or tracked, or the
+    // synthetic "click" on "New Game"/"Keep going" is swallowed on phones.
+    if (!(e.target as HTMLElement).closest('.board')) return;
     e.preventDefault(); // block scroll/zoom while playing
     const t = e.touches[0];
     if (!t) return;
@@ -30,19 +40,21 @@ export function bindInput(el: HTMLElement, onDirection: (d: Direction) => void):
     tracking = true;
   };
   const onTouchEnd = (e: TouchEvent) => {
-    e.preventDefault();
     if (!tracking) return;
+    e.preventDefault(); // board swipe in progress
     tracking = false;
     const t = e.changedTouches[0];
     if (!t) return;
     const dx = t.clientX - sx;
     const dy = t.clientY - sy;
     if (Math.max(Math.abs(dx), Math.abs(dy)) < SWIPE_THRESHOLD) return;
-    onDirection(
-      Math.abs(dx) > Math.abs(dy)
-        ? (dx > 0 ? 'right' : 'left')
-        : (dy > 0 ? 'down' : 'up'),
-    );
+    let dir: Direction;
+    if (Math.abs(dx) > Math.abs(dy)) {
+      dir = dx > 0 ? 'right' : 'left';
+    } else {
+      dir = dy > 0 ? 'down' : 'up';
+    }
+    onDirection(dir);
   };
   const onTouchCancel = () => {
     tracking = false; // a stale position must never fire a move

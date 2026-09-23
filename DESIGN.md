@@ -80,9 +80,12 @@ export function bindInput(el: HTMLElement, onDirection: (d: Direction) => void):
 Returns cleanup that removes all listeners it added.
 - Keyboard: `keydown` on `document`; map `e.key` — ArrowUp/w/W -> up,
   ArrowDown/s/S -> down, ArrowLeft/a/A -> left, ArrowRight/d/D -> right;
-  `preventDefault()` on arrow keys only; key auto-repeat allowed.
-- Touch: `touchstart`/`touchend`/`touchcancel` on `el` with `{ passive: false }`,
-  `preventDefault()` on start (blocks scroll/zoom). Start: store `(sx, sy)`;
+  `preventDefault()` on arrow keys only; held keys are throttled to one move
+  per 150 ms (`KEY_REPEAT_MS` cooldown) so OS auto-repeat can't spam the score.
+- Touch: `touchstart`/`touchend`/`touchcancel` on `el` with `{ passive: false }`;
+  `preventDefault()` on start only when the touch begins on the board (blocks
+  scroll/zoom while playing; header/overlay button touches are left alone so their
+  click fires). Start: store `(sx, sy)`;
   end: `dx = x - sx`, `dy = y - sy`, ignore if `max(|dx|, |dy|) < 30`;
   axis lock: `|dx| > |dy|` -> horizontal (sign of dx), else vertical (sign of
   dy); cancel: reset start so a stale position never fires a move. CSS also sets
